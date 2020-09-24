@@ -9,42 +9,31 @@ bool battle(unit* const u1, unit* u2){
     return (u2->isAlive()) ? true : false; // if defender is dead, return false
 }
 
-void output(unit* const atk) {
-	ofstream output;
-	output.open("output.txt");
-	output << atk->getName() << " " << atk->getHp() << endl;
-	output.close();
-}
-
-bool fileExists(string fname) {
-    ifstream f(fname);
-    if (f.fail()) {
-        cout << fname << " does not exist!" << endl;
-        return false;
-	}
-    return true;
-}
-
-int main(){
-
-    string unit1, unit2;
-    cin >> unit1 >> unit2;
-    if (!(fileExists(unit1) && fileExists(unit2))) {
-        return 0;
-    }
+int main(int argc, char *argv[]){
 
     vector<unit*> alive;
-    //vector<unit*> dead;
-
-    alive.push_back(new unit(unit1));
-    alive.push_back(new unit(unit2));
+    vector<unit*> dead;
+try
+{
+    alive.push_back(unit::parseUnit(argv[1]));
+    alive.push_back(unit::parseUnit(argv[2]));
+}
+catch(const string e)
+{
+    std::cerr << e << '\n';
+    for (auto a: alive) delete a;
+    for (auto d: dead) delete d;
+    return -1;
+}
 
     unit* attacker = alive[0];
     unit* defender = alive[1];
-    while ((attacker->getHp()>0) && (defender->getHp()>0)) {	
+    while (alive.size() > 1) {
         if (!(battle(attacker,defender))){
-			cout << attacker->getName() << " wins. Remaining HP: " << attacker->getHp() << endl;
-			output(attacker);
+            cout << attacker->getName() << " wins. Remaining HP: " << attacker->getHp() << endl;
+            //deleting defender var caused segmentation fault, instead alive's size is being reduced by one and defender is being added to the "dead" vector
+			dead.push_back(defender);   
+			alive.resize(alive.size()-1); 
             continue;
         }
         unit* temp = attacker;
@@ -52,6 +41,7 @@ int main(){
         defender = temp;
     }
     for (auto a: alive) delete a;
-
-    return 0;
+    for (auto d: dead) delete d;
+    delete defender;
+    delete attacker;
 }

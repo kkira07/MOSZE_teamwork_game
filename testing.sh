@@ -1,7 +1,19 @@
 #!/bin/bash
 
-IFS=$'\n'
+FILE=output.txt
 
-for i in `cat battles.txt`; do
-  echo "$i" | ./a.out
+if test -f $FILE
+then
+	rm $FILE
+fi
+
+for unit1 in units/* 
+do
+	for unit2 in units/* 
+  do
+	if [ $unit1 != $unit2 ]
+    then
+			./a.out $unit1 $unit2 >> $FILE
+		fi
+	done
 done
