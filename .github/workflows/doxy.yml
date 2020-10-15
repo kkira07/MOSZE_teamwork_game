@@ -1,0 +1,13 @@
+name: doxy.yml
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+   run-on: ubuntu-latest
+   steps:
+    - uses: actions/checkout@v2
+    - run: g++ -std=c++17 *.cpp -o main -w
