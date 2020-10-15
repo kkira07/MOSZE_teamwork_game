@@ -4,10 +4,25 @@ on:
   push:
     branches:
       - master
+      - gh-pages
 
 jobs:
-  build:
-   run-on: ubuntu-latest
-   steps:
-    - uses: actions/checkout@v2
-    - run: g++ -std=c++17 *.cpp -o main -w
+  deploy:
+    name: Deploy to github pages
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+
+    - run: sudo apt-get install doxygen
+    - run: sudo apt-get install graphviz
+    - run: doxygen doxconf
+
+    - name: Push git subdir branch
+
+    uses: s0/git-publish-subdir-action@v2.4.0
+
+    env:
+      REPO: self
+      BRANCH: gh-pages
+      FOLDER: DOCS/html
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
