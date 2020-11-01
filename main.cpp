@@ -1,7 +1,10 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>    
+#include <map>
 #include "unit.h"
+#include "jsonparser.h"
+#include "player.h"
 
 using namespace std;
 
@@ -14,7 +17,7 @@ using namespace std;
 */
 void ifUnitDead(unit* const attacker, unit* const defender, vector<unit*> &alive, vector<unit*> &dead){
     cout << attacker->getName() << " wins. Remaining HP: " << attacker->getHp() << endl;
-            dead.push_back(defender);
+			dead.push_back(defender);
             auto it = std::find(alive.begin(), alive.end(), defender);
             if (it != alive.end()) { alive.erase(it); }
 }
@@ -26,10 +29,11 @@ int main(int argc, char *argv[]){ ///< Command line arguments
     
     /**
     * \brief This block checks if the file exsists and can be read by parseUnit method. If not, it deletes the vectors.
+    * \exception If file doesn't exsist or doesn't contain the necessary data
     */
     try
     {
-        alive.push_back(unit::parseUnit(argv[1]));
+        alive.push_back(player::parseUnit(argv[1]));
         alive.push_back(unit::parseUnit(argv[2]));
     }
     catch(const string e)
@@ -46,7 +50,6 @@ int main(int argc, char *argv[]){ ///< Command line arguments
     double atctime = attacker->getAcd(); ///< Attacker's time that will be counted down to progress battle
     double deftime = defender->getAcd(); ///< Defender's time that will be counted down to progress battle
     
-
     /**
     * \brief This loop contains the first two hits.
     */
@@ -78,6 +81,6 @@ int main(int argc, char *argv[]){ ///< Command line arguments
         attacker = alive[0];
         defender = alive[1];
     }
-    for (auto a: alive) delete a;
-    for (auto d: dead) delete d;
+    for (auto a : alive) delete a;
+    for (auto d : dead) delete d;
 }

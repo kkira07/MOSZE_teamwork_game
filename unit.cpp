@@ -1,19 +1,22 @@
+#include <map>
+#include <iterator>
+#include <string>
+#include <fstream>
 #include "unit.h"
+#include "jsonparser.h"
 
-//  getter fügvények
 double unit::getHp () const { return hp; }
 double unit::getDmg () const { return dmg; }
 double unit::getAcd () const { return attackcooldown; }
 std::string unit::getName () const { return name; }
 
+void unit::loseHp(unit *attacker) {
+    hp -= attacker->dealDamage(this);
+    if (hp <= 0) hp = 0;
+}
 
-void unit::loseHp(unit const *attacker){
-        hp -= attacker->getDmg();
-        if (hp<0) hp=0;
-    }
-
-bool unit::battle(unit const *u1){
-    loseHp(u1);
+bool unit::battle(unit *u1){
+    this->loseHp(u1);
     return (getHp()>0) ? true : false;
 }
 
@@ -36,29 +39,22 @@ bool unit::attackOrDefend(unit const *defender, double &atctime, double &deftime
 }
 
 unit* unit::parseUnit(std::string fname){
-        std::ifstream f(fname);   
-        std::string t;
-        std::string n = "";
-        double h = -1;
-        double d = -1;
-        double a = -1;
-        if (!f) throw fname+" file does not exist!" ;
-        while (!f.eof()) {
-                std::getline(f,t);
-                if((t.find("name") != std::string::npos) && n == ""){
-                        t = t.substr(t.find(": \"")+3);
-                        n = t.substr(0,t.size()-2); 
-                }else if((t.find("hp") != std::string::npos) && h == -1){
-                        t = t.substr(t.find(": ")+2);
-                        h = std::stod(t);
-                }else if((t.find("dmg") != std::string::npos) && d == -1){
-                        t = t.substr(t.find(": ")+2);
-                        d = std::stod(t);
-                }else if((t.find("acd") != std::string::npos) && a == -1){
-                        t = t.substr(t.find(": ")+2);
-                        a = std::stod(t);
-                }
+        std::string n;
+        double d,h,a;
+        std::map<std::string,std::string> m;
+        try{
+            m = jsonparser::fileInp(fname);
+        }catch(const std::string e){
+                std::cerr << e << '\n';
+                std::exit( -1);
+        }        
+        std::map<std::string, std::string>::iterator itr;
+        for (itr = m.begin(); itr != m.end(); ++itr) {
+                if(itr->first == "name") n = jsonparser::rFVbQ(itr->second);
+                else if(itr->first == "dmg") d = stod(itr->second);
+                else if(itr->first == "hp") h = stod(itr->second);
+                else if(itr->first == "acd") a = stod(itr->second);
+                else continue;
         }
-        f.close();
         return new unit(n,h,d,a);
 }
